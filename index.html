@@ -6,7 +6,7 @@
     <title>home</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" media="screen" href="css/main.css" />
-
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
 </head>
 <body>
 
@@ -14,16 +14,109 @@
     <p>Escolha uma das opções para visualizar o retorno dos respectivos endpoints da API do GitHub</p>
   
     <form class="form-inline">
-        <div class="form-group">
-            <input type="usuário" class="form-control" id="user" placeholder="nome usuário">
+        <div class="form-group mx-md-3 mb-2">
+            <input type="usuário" class="form-control" id="userSubmit" placeholder="nome usuário">
         </div>
-        <button class="btn btn-primary mb-3" type="submit">Informações User GitHub</button>
+            <button class="btn btn-primary mb-3" type="button" onclick="callGitApi()">Informações User GitHub</button>
     </form>
  
+    <div class="container">
+        <div class="row">
+          <div class="col w-25" id="imagem">
+            <img src="" alt="" id="img">
+            <p id='bio'></p>
+          </div>
+      
+          <div class="col" id='des'>
+            <div class="row">
+              <div class="col mini-box" id='description'>
+                  <h2 id='name'></h2>
+                  <p id='datas'></p>
+              </div>
+            </div>
+          </div>
+        </div>
+    
+    </div>
+
+
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
 
+    <script>
+
+    function sendToHtml(items) {
+        /* If user exists */
+        if (Object.keys(items).length > 0) {
+        document.getElementById("img").src = items.imagem
+        document.getElementById("bio").innerHTML = items.bio
+        document.getElementById("name").innerHTML = items.nome
+        let datasString ="desde: "+ items.cadastro + " | última atualização: " + items.atualizou
+        document.getElementById("datas").innerHTML = datasString
+        } /* If user doesnt exist */
+         else { 
+            document.getElementById("name").innerHTML = 'Usuário no existe'
+        }
+    }
+
+    function erraseHtml() {
+        document.getElementById("img").src = ""
+        document.getElementById("bio").innerHTML = ""
+        document.getElementById("name").innerHTML = ""
+        document.getElementById("datas").innerHTML = ""
+    }
+
+
+    function responseHandler(output) {
+        /* If user exists */
+        if (output.hasOwnProperty('login')){
+            /*Assign response*/
+            let nome = output.name;
+            let bio = output.bio;
+            let imagem =  output.avatar_url;
+            let cadastro =  output.created_at.substring(0, 10);
+            let atualizou =  output.updated_at.substring(0, 10);
+            return {nome: nome, bio: bio, imagem: imagem, cadastro: cadastro, atualizou: atualizou};
+        /* If user doesn't exist */
+        } else {
+            /*Assign empty response*/
+            let nome = "";
+            let bio = "";
+            let imagem = "";
+            let cadastro = "";
+            let atualizou = "";
+            return {};
+        }
+    }
+
+    function callGitApi() { 
+        /* Erase HTML*/
+        erraseHtml();
+        /* Gets user input */
+        var usuario = document.getElementById("userSubmit").value;
+        /*API endopoint */
+        let api = 'https://api.github.com/users/';
+        /* If no user */
+        if (usuario === "") {
+            alert("Insira nome de usuário");
+        /* If user */
+        } else {
+        /* Call the API */
+            let request = api + usuario;
+            let response;
+        /* Get response, handle and send to HTML */
+            fetch(request)
+                .then(res => res.json())
+                .then( output => {
+                        var items = responseHandler(output);
+                        sendToHtml(items);
+                    }
+                )
+        }
+    }
+
+    </script>
 
 </body>
 </html>
